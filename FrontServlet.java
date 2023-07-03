@@ -2,6 +2,7 @@ package framework;
 import javax.servlet.*;
 import javax.servlet.ServletContext;
 import javax.servlet.http.*;
+import java.io.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,13 @@ public class FrontServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     HashMap<String,Mapping> MappingUrls;
+    HashMap<String,Object> instances;
+
+    public void init(){
+      if(MappingUrls!=null){
+      System.out.println("TAILLLLLLLLLLLLLLE-----> "+MappingUrls.size());
+      }
+    }
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processRequest(request, response);
     }
@@ -41,7 +49,7 @@ public class FrontServlet extends HttpServlet {
 //          processRequest(request, response);
 //     }
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)throws ServletException, IOException {
-            
+          //init();
           //PrintWriter out=response.getWriter();
         try{
           String url = request.getRequestURL().toString();
@@ -67,19 +75,20 @@ public class FrontServlet extends HttpServlet {
           Element element=(Element)nodeList.item(0); //de le 1er satria iray ihany ny path-after-WEB-INF
           String path=element.getTextContent();
           //System.out.println(path);
-
           nodeList=rootElement.getElementsByTagName("package-root-of-class");
           element=(Element)nodeList.item(0); 
           String pkgroot=element.getTextContent();
           //System.out.println(pkgroot);
-          //-------------------------------------------------------------
+          //-----------------------------------------------------------------------------------------------------------------ajout a la Hashmap<String,>
           Vector vcm=access.getClassAndtheMethodinPackagebyAnnotationvalue(this.getServletContext().getRealPath("/WEB-INF"+path),pkgroot,annotmethod, "url_map");
           if(vcm==null){ vcm=new Vector(); }
           Mapping[] map=new Mapping[vcm.size()];
           Object[] objcm=null;
           Class classe=null;
           Method method=null;
-          this.MappingUrls=new HashMap<>();
+          if(this.MappingUrls==null){
+            this.MappingUrls=new HashMap<>();
+          }
           for(int i=0;i<vcm.size();i++){
             objcm=(Object[])vcm.elementAt(i); classe=(Class)objcm[0]; method=(Method)objcm[1];
 
@@ -124,7 +133,41 @@ public class FrontServlet extends HttpServlet {
           Vector<Object[]> vClMeth=util.getTheClassAndMethodByRequest(MappingUrls, request);
           //System.out.println("-------------------"+vClMeth);
           request.setAttribute("vClassMethod",vClMeth);
-          //--------------------------------
+          //--------------------------------Sauvegarde fichier
+            // Obtenez le conteneur de la servlet
+            // ServletContext context = request.getServletContext();
+            // Part filePart = request.getPart("fileUpload");
+            // if(filePart!=null){
+            //   // Récupérez le nom du fichier
+            //   String fileName = filePart.getSubmittedFileName();
+            //   System.out.println(fileName);
+
+            //   // Définissez le chemin de destination pour enregistrer le fichier téléchargé
+            //   nodeList=rootElement.getElementsByTagName("upload-path");
+            //   element=(Element)nodeList.item(0); 
+            //   String uploadPath = element.getTextContent();
+            //   System.out.println(uploadPath);
+            //   // Créez le flux de sortie pour écrire le fichier téléchargé
+
+
+            //  filePart.write(uploadPath+"\\"+fileName);//sauvgarder le fichier
+
+            //   // Lisez les données du flux d'entrée et écrivez-les dans le flux de sortie
+            //   InputStream fileContent = filePart.getInputStream();
+            //   ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
+            //   byte[] buffer = new byte[4096];
+            //   int bytesRead;
+            //   while ((bytesRead = fileContent.read(buffer)) != -1) {
+            //     byteArrayOutputStream.write(buffer, 0, bytesRead);
+            //   }
+            //   byte[] filebytes=byteArrayOutputStream.toByteArray();
+            //   // Fermez les flux
+            //   byteArrayOutputStream.close();
+            //   fileContent.close();
+            // }
+
+            //------------------------------------------------------
+
           request.getRequestDispatcher(dispach).forward(request, response);
         }catch(Exception ex){
             ex.printStackTrace();

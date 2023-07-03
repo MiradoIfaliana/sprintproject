@@ -239,7 +239,7 @@ public class AccessAllClassByPackage {
             value = m[i].invoke(annotation);
             if(value instanceof String[]){
             String[] dd=(String[])value;
-            System.out.println("nameMethode -----> "+m[i]+"----------arg:"+nameMethod+"-----------value-----:"+dd[0]);
+            System.out.println("nameMethode -----> "+m[i]+"----------arg:"+nameMethod+"-----------value-----:"+dd);
             }
             // //System.out.println("valeur -----> "+value);
          }

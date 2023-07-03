@@ -7,6 +7,7 @@ public class Emp {
     String nom;
     String nee;
     String genre;
+    FileUpload fileUpload;
 
     public Emp(){  }
     public Emp(int idemp, String nom, String nee, String genre) {
@@ -42,6 +43,16 @@ public class Emp {
     public void setGenre(String genre) {
         this.genre = genre;
     }
+    public FileUpload getFileUpload() {
+        return fileUpload;
+    }
+    public void setFileUpload(FileUpload fileUpload) {
+        this.fileUpload = fileUpload;
+        if(fileUpload!=null){
+            System.out.println("------------------------------------------------------------->"+this.fileUpload.getFilename());
+        }
+    }
+    
     @Url(url_map="save")
     public void insert(){   
     }
@@ -59,5 +70,6 @@ public class Emp {
         mv.setUrl("page1.jsp");
         return mv;
     }
+
 }
 //tokony mitovy anarana am'le attribu an'le class le name ao @ formulaire.

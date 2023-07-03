@@ -9,4 +9,5 @@ import java.lang.annotation.Target;
 @Target ( ElementType.METHOD) //manisy virgule , Element.METHOD
 public @interface Url {
     String url_map() default "";
+    String[] parameters() default {};
 }

@@ -1,14 +1,21 @@
 package framework;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.sql.Date;
 import java.sql.Time;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Vector;
 import java.io.IOException;
 
 import javax.servlet.*;
 import javax.servlet.ServletContext;
 import javax.servlet.http.*;
+
+import framework.AccessAllClassByPackage;
+import framework.Mapping;
+import framework.annotation.*;;
 
 public class Utilitaire {
     public String to_getAttribu(String nomAttribu,String typeField)
@@ -61,7 +68,7 @@ public class Utilitaire {
             return object;
       }
 
-    public Object createIfExisteRequest(Class classe,HttpServletRequest request)throws Exception, ServletException, IOException {
+    public Object createtheInstanceClasseIfExisteRequest(Class classe,HttpServletRequest request)throws Exception, ServletException, IOException {
       Object object=classe.newInstance();
       Field[] fields= classe.getDeclaredFields();
       String rqsVal="";
@@ -82,17 +89,75 @@ public class Utilitaire {
       return object;
     }
 
-    public Object[] createAllIfExisteRequest(Class[] classes,HttpServletRequest request)throws Exception, ServletException, IOException {
+    public Object[] createInstanceAllclassesIfExisteRequest(Class[] classes,HttpServletRequest request)throws Exception, ServletException, IOException {
       Vector vObjs=new Vector();
       Object obj=null;
       for(int i=0;i<classes.length;i++){ 
-            obj=createIfExisteRequest(classes[i],request);
+            obj=createtheInstanceClasseIfExisteRequest(classes[i],request);
             if(obj!=null){ vObjs.add(obj); } 
       }
       if(vObjs.size()<1){ return null;}
       Object[] objects=new Object[vObjs.size()];
       for(int i=0;i<vObjs.size();i++){   objects[i]=vObjs.elementAt(i); }
       return objects;
+    }
+    public Vector<Object[]> getTheClassAndMethodByRequest(HashMap<String,Mapping> MappingUrls,HttpServletRequest request)throws Exception, ServletException, IOException {
+      if(MappingUrls==null){return null;}
+      else if(MappingUrls.size()<1){return null;}
+      Vector vClassMethod=new Vector<Object[]>();
+      Object[] objClaMeth=null;
+      Mapping mapping=null;
+      Class theClass=null;
+      Method theMethod=null;
+      Parameter[] parametre=null;
+      int nbrequestExist=0;
+      AccessAllClassByPackage access=new AccessAllClassByPackage();
+      for(int i=0;i<MappingUrls.size();i++){
+            mapping=(Mapping)MappingUrls.get(String.valueOf(i+1));
+            theClass=mapping.getTheclass();
+            theMethod=mapping.getThemethod();
+            parametre=theMethod.getParameters();
+            System.out.println("method------:"+theMethod+"|----class:"+theClass.getName());
+            String[] parametersname=(String[])access.getValueAnnotation(theMethod,Url.class , "parameters");
+            
+            if(parametersname!=null){
+                  System.out.println("length------------------------:"+parametersname.length);
+                  if(parametersname.length>0){
+                        for(int j=0;j<parametersname.length;j++){
+                              System.out.println("name------------------------:"+parametersname[j]);
+                              if( request.getParameter(parametersname[j])!=null ){ //raha mi-existe le request mitovy @ le nom an'le parametre an'le fonction     
+                                    nbrequestExist++;
+                              }
+                        }
+                        if(nbrequestExist==parametersname.length){
+                              objClaMeth=new Object[2];
+                              objClaMeth[0]=theClass;
+                              objClaMeth[1]=theMethod;
+                              vClassMethod.add(objClaMeth);
+                        }
+                        nbrequestExist=0;
+                  }
+            }
+            //-----------------------------------raha mba mety le parameters[i].getname() nefa arg0,arg1....
+            // if(parametre!=null){
+            //       System.out.println("-------------param------"+parametre.length);
+            //       for(int j=0;j<parametre.length;j++){
+            //             System.out.println("-----nom param----"+parametre[j].getName()); 
+            //             if( request.getParameter(parametre[j].getName())!=null ){ //raha mi-existe le request mitovy @ le nom an'le parametre an'le fonction     
+            //             nbrequestExist++;
+            //             }
+            //       }
+            //       if(nbrequestExist==parametre.length){ //ka raha ni-existe daholo le izy
+            //             objClaMeth=new Object[2];
+            //             objClaMeth[0]=theClass;
+            //             objClaMeth[1]=theMethod;
+            //             vClassMethod.add(objClaMeth);
+            //       }
+            //       nbrequestExist=0;
+            // }
+      }
+      if(vClassMethod.size()<1){return null;}
+      return vClassMethod;
     }
    
 

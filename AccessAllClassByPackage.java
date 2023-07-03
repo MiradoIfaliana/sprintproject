@@ -237,6 +237,10 @@ public class AccessAllClassByPackage {
       for (int i = 0; i < m.length; i++) {
          if (nameMethod.compareTo(m[i].getName()) == 0) {
             value = m[i].invoke(annotation);
+            if(value instanceof String[]){
+            String[] dd=(String[])value;
+            System.out.println("nameMethode -----> "+m[i]+"----------arg:"+nameMethod+"-----------value-----:"+dd[0]);
+            }
             // //System.out.println("valeur -----> "+value);
          }
       }
@@ -307,6 +311,10 @@ public class AccessAllClassByPackage {
       if(vCM.size()<1){ return null; }
       return vCM;
    }  
+
+
+
+   
    // Field[] fields=annotation.annotationType().getDeclaredFields();
    // for(int i=0;i<fields.length;i++){
    // //System.out.println(fields[i]);

@@ -44,19 +44,20 @@ public class FrontServlet extends HttpServlet {
           //PrintWriter out=response.getWriter();
         try{
           String url = request.getRequestURL().toString();
-          System.out.println("URL : "+url);
+          //System.out.println("URL : "+url);
           String uri = request.getRequestURI();
-          System.out.println("URI : "+uri);
+          //System.out.println("URI : "+uri);
           String[] uris=uri.split("/");
           String annotmethod=uris[uris.length-1];
-          System.out.println("annotation method : "+annotmethod);
+          //System.out.println("annotation method : "+annotmethod);
           request.setAttribute("message",annotmethod);
           AccessAllClassByPackage access=new AccessAllClassByPackage(); 
-          System.out.println(new Client().getClass().getPackage());
+          //System.out.println(new Client().getClass().getPackage());
           //-------------------------------------------------------------webxml
           DocumentBuilderFactory factory= DocumentBuilderFactory.newInstance();
           DocumentBuilder builder=factory.newDocumentBuilder();
-          File xmlFile = new File("D:\\ITUS4\\mrNaina\\sprint--0\\web.xml");
+          //File xmlFile = new File("D:\\ITUS4\\mrNaina\\sprint--0\\web.xml");
+          File xmlFile = new File(this.getServletContext().getRealPath("/WEB-INF/web.xml"));
           Document document = builder.parse(xmlFile);
       
           Element rootElement= document.getDocumentElement();
@@ -64,15 +65,15 @@ public class FrontServlet extends HttpServlet {
           NodeList nodeList=rootElement.getElementsByTagName("path-after-WEB-INF");
           Element element=(Element)nodeList.item(0); //de le 1er satria iray ihany ny path-after-WEB-INF
           String path=element.getTextContent();
-          System.out.println(path);
+          //System.out.println(path);
 
-          nodeList=rootElement.getElementsByTagName("package-root");
+          nodeList=rootElement.getElementsByTagName("package-root-of-class");
           element=(Element)nodeList.item(0); 
           String pkgroot=element.getTextContent();
-          System.out.println(pkgroot);
+          //System.out.println(pkgroot);
           //-------------------------------------------------------------
           Vector vcm=access.getClassAndtheMethodinPackagebyAnnotationvalue(this.getServletContext().getRealPath("/WEB-INF"+path),pkgroot,annotmethod, "url_map");
-          
+          if(vcm==null){ vcm=new Vector(); }
           Mapping[] map=new Mapping[vcm.size()];
           Object[] objcm=null;
           Class classe=null;
@@ -81,7 +82,7 @@ public class FrontServlet extends HttpServlet {
           for(int i=0;i<vcm.size();i++){
             objcm=(Object[])vcm.elementAt(i); classe=(Class)objcm[0]; method=(Method)objcm[1];
 
-            System.out.println(objcm[0].toString()+" | "+objcm[1].toString());
+            //System.out.println(objcm[0].toString()+" | "+objcm[1].toString());
             map[i]=new Mapping();
             map[i].setClassName(classe.getSimpleName());
             map[i].setMethodName(method.getName());
@@ -96,14 +97,19 @@ public class FrontServlet extends HttpServlet {
           Class cl=null;
           String namereturn="";
           ModelView mv=null;
-          for(int i=0;i<MappingUrls.size();i++){
+          for(int i=0;i<MappingUrls.size();i++){ //tetezina le zavatra rehetra anatin'ilay MappingUrls azo avy amin'ilay package sy anotation teo ambony.
           mapp=MappingUrls.get(String.valueOf(i+1));
-          System.out.println("<h2>class : "+mapp.getClassName()+" | method : "+mapp.getMethodName()+" </h2>");
+          //System.out.println("<h2>class : "+mapp.getClassName()+" | method : "+mapp.getMethodName()+" </h2>");
           cl=mapp.getTheclass();
-          namereturn=cl.getMethod(mapp.getMethodName()).getReturnType().getSimpleName();
-          if(namereturn.compareTo("ModelView")==0){
+          namereturn=cl.getMethod(mapp.getMethodName()).getReturnType().getSimpleName(); //de alaina le anaran'le type de retour
+          if(namereturn.compareTo("ModelView")==0){ //ka jerena raha ModelView le type de retour
 
-            mv=(ModelView)cl.getDeclaredMethod(mapp.getMethodName()).invoke(cl.newInstance());
+            mv=(ModelView)cl.getDeclaredMethod(mapp.getMethodName()).invoke(cl.newInstance()); //alaina le ModelView 
+            if(mv.getData()!=null){
+              for(int u=0;u<mv.getData().size();u++){
+                request.setAttribute(""+(u+1) , mv.getData().get((u+1)+"")); //(u+1)--->ici mon key est de String mais ce sont de chiffre et il commence par 1
+              }
+            }
             dispach=mv.getUrl();
           }
 

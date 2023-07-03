@@ -10,7 +10,7 @@
             <file-size-threshold>5242880</file-size-threshold>
         </multipart-config>
 
-        <upload-path>D:\apache-tomcat-8\webapps\spint_web\WEB-INF\uploads</upload-path>
+        <upload-path>D:\apache-tomcat-8\webapps\web-sprint\WEB-INF\uploads</upload-path>
 
     </servlet>
     <servlet-mapping>

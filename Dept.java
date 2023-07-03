@@ -1,8 +1,9 @@
-package test_framework;
+package test_framework.test_framework;
 import framework.annotation.*;
 import framework.*;
 import java.util.*;
 
+@Scope(annote="non")
 public class Dept {    
     int id;
     String nom;

@@ -1,12 +1,24 @@
-package test_framework.packe1.packe2;
+package test_framework.test_framework.packe2;
 import framework.*;
 import java.util.*;
 import framework.annotation.*;
+@Scope(annote="singleton")
 public class Mirado {
     int idmirado;
     String nom;
     String nee;
     String genre;
+
+    int nbAppel;
+
+    public int getNbAppel() {
+        return nbAppel;
+    }
+
+    public void setNbAppel(int nbAppel) {
+        this.nbAppel = nbAppel;
+    }
+    public void plusplusnbAppel(){ nbAppel=nbAppel+1; }
     
     public int getIdmirado() {
         return idmirado;

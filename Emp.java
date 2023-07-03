@@ -16,16 +16,40 @@ public class Emp {
         this.genre = genre;
     }
 
+    
+
+    public int getIdemp() {
+        return idemp;
+    }
+    public void setIdemp(int idemp) {
+        this.idemp = idemp;
+    }
+    public String getNom() {
+        return nom;
+    }
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+    public String getNee() {
+        return nee;
+    }
+    public void setNee(String nee) {
+        this.nee = nee;
+    }
+    public String getGenre() {
+        return genre;
+    }
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
     @Url(url_map="save")
-    public void insert(){
-        
+    public void insert(){   
     }
     
     @Url(url_map="findall")
     public void findEmp(){
     }
     public void update(){
-        
     }
     @Url(url_map="findall")
     public ModelView searchEmp(){

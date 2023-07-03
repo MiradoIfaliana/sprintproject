@@ -19,6 +19,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import framework.ModelView;
+import framework.Utilitaire;
 public class FrontServlet extends HttpServlet {
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -97,25 +98,29 @@ public class FrontServlet extends HttpServlet {
           Class cl=null;
           String namereturn="";
           ModelView mv=null;
+          Utilitaire util=new Utilitaire();
+          Vector vObjs=new Vector();
           for(int i=0;i<MappingUrls.size();i++){ //tetezina le zavatra rehetra anatin'ilay MappingUrls azo avy amin'ilay package sy anotation teo ambony.
-          mapp=MappingUrls.get(String.valueOf(i+1));
-          //System.out.println("<h2>class : "+mapp.getClassName()+" | method : "+mapp.getMethodName()+" </h2>");
-          cl=mapp.getTheclass();
-          namereturn=cl.getMethod(mapp.getMethodName()).getReturnType().getSimpleName(); //de alaina le anaran'le type de retour
-          if(namereturn.compareTo("ModelView")==0){ //ka jerena raha ModelView le type de retour
+            mapp=MappingUrls.get(String.valueOf(i+1));
+            //System.out.println("<h2>class : "+mapp.getClassName()+" | method : "+mapp.getMethodName()+" </h2>");
+            cl=mapp.getTheclass();
+            namereturn=cl.getMethod(mapp.getMethodName()).getReturnType().getSimpleName(); //de alaina le anaran'le type de retour
+            if(namereturn.compareTo("ModelView")==0){ //ka jerena raha ModelView le type de retour
 
-            mv=(ModelView)cl.getDeclaredMethod(mapp.getMethodName()).invoke(cl.newInstance()); //alaina le ModelView 
-            if(mv.getData()!=null){
-              for(int u=0;u<mv.getData().size();u++){
-                request.setAttribute(""+(u+1) , mv.getData().get((u+1)+"")); //(u+1)--->ici mon key est de String mais ce sont de chiffre et il commence par 1
+              mv=(ModelView)cl.getDeclaredMethod(mapp.getMethodName()).invoke(cl.newInstance()); //alaina le ModelView 
+              if(mv.getData()!=null){
+                for(int u=0;u<mv.getData().size();u++){
+                  request.setAttribute(""+(u+1) , mv.getData().get((u+1)+"")); //(u+1)--->ici mon key est de String mais ce sont de chiffre et il commence par 1
+                }
               }
+              dispach=mv.getUrl();
             }
-            dispach=mv.getUrl();
           }
-
-          }
-
-
+          //------------------------------maka an'le valeur avy @ formulaire
+          Class[] classes=access.getAllClassinAllpackageBypackageRacine(this.getServletContext().getRealPath("/WEB-INF"+path), pkgroot);
+          Object[] objects=util.createAllIfExisteRequest(classes, request);
+          request.setAttribute("objects", objects);
+          //---------------------------------
           request.getRequestDispatcher(dispach).forward(request, response);
         }catch(Exception ex){
             ex.printStackTrace();
@@ -126,5 +131,4 @@ public class FrontServlet extends HttpServlet {
 
             
     }
-
 }

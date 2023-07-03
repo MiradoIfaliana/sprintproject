@@ -1,11 +1,9 @@
-package model;
+package framework;
 
 import java.io.File;
 import java.sql.*;
 import java.util.Vector;
 import java.lang.annotation.*;
-import annotation.*;
-
 import java.lang.reflect.*;
 
 public class AccessAllClassByPackage {

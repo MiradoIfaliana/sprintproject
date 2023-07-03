@@ -1,6 +1,5 @@
-package etu1786.model;
-import java.sql.*;
-import annotation.*;
+package test_framework;
+import framework.annotation.*;
 
 public class Dept {    
     int id;

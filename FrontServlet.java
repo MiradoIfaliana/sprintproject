@@ -17,6 +17,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import framework.ModelView;
 public class FrontServlet extends HttpServlet {
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -82,21 +84,33 @@ public class FrontServlet extends HttpServlet {
             System.out.println(objcm[0].toString()+" | "+objcm[1].toString());
             map[i]=new Mapping();
             map[i].setClassName(classe.getSimpleName());
-            map[i].setMethod(method.getName());
+            map[i].setMethodName(method.getName());
+            map[i].setTheclass(classe);
 
             MappingUrls.put(String.valueOf(i+1), map[i]);
           }
           request.setAttribute("hashmap",MappingUrls);
 
+          String dispach="index.jsp";
           Mapping mapp=null;
+          Class cl=null;
+          String namereturn="";
+          ModelView mv=null;
           for(int i=0;i<MappingUrls.size();i++){
           mapp=MappingUrls.get(String.valueOf(i+1));
-          System.out.println("<h2>class : "+mapp.getClassName()+" | method : "+mapp.getMethod()+" </h2>");
+          System.out.println("<h2>class : "+mapp.getClassName()+" | method : "+mapp.getMethodName()+" </h2>");
+          cl=mapp.getTheclass();
+          namereturn=cl.getMethod(mapp.getMethodName()).getReturnType().getSimpleName();
+          if(namereturn.compareTo("ModelView")==0){
+
+            mv=(ModelView)cl.getDeclaredMethod(mapp.getMethodName()).invoke(cl.newInstance());
+            dispach=mv.getUrl();
+          }
+
           }
 
 
-
-          request.getRequestDispatcher("page1.jsp").forward(request, response);
+          request.getRequestDispatcher(dispach).forward(request, response);
         }catch(Exception ex){
             ex.printStackTrace();
         }

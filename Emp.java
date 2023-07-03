@@ -1,4 +1,5 @@
 package test_framework;
+import framework.*;
 import framework.annotation.*;
 public class Emp {
     int idemp;
@@ -12,14 +13,15 @@ public class Emp {
     
     @Url(url_map="findall")
     public void findEmp(){
-
     }
     public void update(){
         
     }
     @Url(url_map="findall")
-    public void searchEmp(){
-        
+    public ModelView searchEmp(){
+        ModelView mv=new ModelView();
+        mv.setUrl("page1.jsp");
+        return mv;
     }
     
 

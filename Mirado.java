@@ -7,6 +7,41 @@ public class Mirado {
     String nom;
     String nee;
     String genre;
+    
+    public int getIdmirado() {
+        return idmirado;
+    }
+
+    public void setIdmirado(int idmirado) {
+        this.idmirado = idmirado;
+    }
+
+    public String getNom() {
+        return nom;
+    }
+
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
+
+    public String getNee() {
+        return nee;
+    }
+
+    public void setNee(String nee) {
+        this.nee = nee;
+    }
+
+    public String getGenre() {
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
+
+
+
     @Url(url_map="save")
     public void insert(){
         

@@ -1,4 +1,4 @@
-package etu1786.framework.servlet;
+package framework;
 import javax.servlet.*;
 import javax.servlet.ServletContext;
 import javax.servlet.http.*;
@@ -8,9 +8,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.*;
-import etu1786.framework.*;
-import etu1786.model.Client;
-import model.*;
+import test_framework.*;
+
+import javax.sound.midi.SysexMessage;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
+import framework.ModelView;
 public class FrontServlet extends HttpServlet {
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -45,8 +53,25 @@ public class FrontServlet extends HttpServlet {
           request.setAttribute("message",annotmethod);
           AccessAllClassByPackage access=new AccessAllClassByPackage(); 
           System.out.println(new Client().getClass().getPackage());
-          
-          Vector vcm=access.getClassAndtheMethodinPackagebyAnnotationvalue(this.getServletContext().getRealPath("/WEB-INF/classes/etu1786"),"etu1786",annotmethod, "url_map");
+          //-------------------------------------------------------------webxml
+          DocumentBuilderFactory factory= DocumentBuilderFactory.newInstance();
+          DocumentBuilder builder=factory.newDocumentBuilder();
+          File xmlFile = new File("D:\\ITUS4\\mrNaina\\sprint--0\\web.xml");
+          Document document = builder.parse(xmlFile);
+      
+          Element rootElement= document.getDocumentElement();
+
+          NodeList nodeList=rootElement.getElementsByTagName("path-after-WEB-INF");
+          Element element=(Element)nodeList.item(0); //de le 1er satria iray ihany ny path-after-WEB-INF
+          String path=element.getTextContent();
+          System.out.println(path);
+
+          nodeList=rootElement.getElementsByTagName("package-root");
+          element=(Element)nodeList.item(0); 
+          String pkgroot=element.getTextContent();
+          System.out.println(pkgroot);
+          //-------------------------------------------------------------
+          Vector vcm=access.getClassAndtheMethodinPackagebyAnnotationvalue(this.getServletContext().getRealPath("/WEB-INF"+path),pkgroot,annotmethod, "url_map");
           
           Mapping[] map=new Mapping[vcm.size()];
           Object[] objcm=null;
@@ -54,31 +79,45 @@ public class FrontServlet extends HttpServlet {
           Method method=null;
           this.MappingUrls=new HashMap<>();
           for(int i=0;i<vcm.size();i++){
-            objcm=(Object[])vcm.elementAt(i);
-            classe=(Class)objcm[0];
-            method=(Method)objcm[1];
+            objcm=(Object[])vcm.elementAt(i); classe=(Class)objcm[0]; method=(Method)objcm[1];
 
             System.out.println(objcm[0].toString()+" | "+objcm[1].toString());
             map[i]=new Mapping();
             map[i].setClassName(classe.getSimpleName());
-            map[i].setMethod(method.getName());
+            map[i].setMethodName(method.getName());
+            map[i].setTheclass(classe);
 
             MappingUrls.put(String.valueOf(i+1), map[i]);
           }
           request.setAttribute("hashmap",MappingUrls);
 
+          String dispach="index.jsp";
           Mapping mapp=null;
+          Class cl=null;
+          String namereturn="";
+          ModelView mv=null;
           for(int i=0;i<MappingUrls.size();i++){
           mapp=MappingUrls.get(String.valueOf(i+1));
-          System.out.println("<h2>class : "+mapp.getClassName()+" | method : "+mapp.getMethod()+" </h2>");
+          System.out.println("<h2>class : "+mapp.getClassName()+" | method : "+mapp.getMethodName()+" </h2>");
+          cl=mapp.getTheclass();
+          namereturn=cl.getMethod(mapp.getMethodName()).getReturnType().getSimpleName();
+          if(namereturn.compareTo("ModelView")==0){
+
+            mv=(ModelView)cl.getDeclaredMethod(mapp.getMethodName()).invoke(cl.newInstance());
+            dispach=mv.getUrl();
+          }
+
           }
 
 
-
-          request.getRequestDispatcher("page1.jsp").forward(request, response);
+          request.getRequestDispatcher(dispach).forward(request, response);
         }catch(Exception ex){
             ex.printStackTrace();
         }
+        //jar cf framework.jar framework/
+        //jar cf test_framework.war test_framework/
+
+
             
     }
 

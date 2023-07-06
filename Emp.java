@@ -1,10 +1,6 @@
-package etu1786.model;
-
-import java.sql.Connection;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.Vector;
-import annotation.*;
+package test_framework;
+import framework.*;
+import framework.annotation.*;
 public class Emp {
     int idemp;
     String nom;
@@ -17,14 +13,15 @@ public class Emp {
     
     @Url(url_map="findall")
     public void findEmp(){
-
     }
     public void update(){
         
     }
     @Url(url_map="findall")
-    public void searchEmp(){
-        
+    public ModelView searchEmp(){
+        ModelView mv=new ModelView();
+        mv.setUrl("page1.jsp");
+        return mv;
     }
     
 

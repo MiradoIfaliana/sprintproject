@@ -1,10 +1,5 @@
-package etu1786.model;
-
-import java.sql.Connection;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.util.Vector;
-import annotation.*;
+package test_framework;
+import  framework.annotation.*;
 
 public class Client {
 

@@ -1,14 +1,16 @@
-package etu1786.model;
-import java.sql.*;
-import annotation.*;
+package test_framework;
+import framework.annotation.*;
+import framework.*;
 
 public class Dept {    
     int id;
     String nom;
 
     @Url(url_map="findall")
-    public void find_all(){
-
+    public ModelView find_all(){
+       ModelView mv=new ModelView();
+       mv.setUrl("page1.jsp");
+       return mv;
     }
     @Url(url_map="save")
     public void insert(){
@@ -19,7 +21,6 @@ public class Dept {
     }
     @Url(url_map="findall")
     public void search(){
-        
     }
 
 

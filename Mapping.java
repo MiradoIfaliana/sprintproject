@@ -1,8 +1,12 @@
 package framework;
+
+import java.lang.reflect.Method;
+
 public class Mapping {
     String className;
     String methodName;
     Class theclass;
+    Method themethod;
     public String getClassName() {
         return className;
     }
@@ -21,6 +25,14 @@ public class Mapping {
     public void setTheclass(Class theclass) {
         this.theclass = theclass;
     }
+    public Method getThemethod() {
+        return themethod;
+    }
+    public void setThemethod(Method themethod) {
+        this.themethod = themethod;
+    }
+
+    
     
     
 }

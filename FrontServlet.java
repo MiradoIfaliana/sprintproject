@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.util.*;
-import test_framework.*;
+//import test_framework.*;
 
 import javax.sound.midi.SysexMessage;
 import javax.xml.parsers.DocumentBuilder;
@@ -88,7 +88,7 @@ public class FrontServlet extends HttpServlet {
             map[i].setClassName(classe.getSimpleName());
             map[i].setMethodName(method.getName());
             map[i].setTheclass(classe);
-
+            map[i].setThemethod(method);
             MappingUrls.put(String.valueOf(i+1), map[i]);
           }
           request.setAttribute("hashmap",MappingUrls);
@@ -101,10 +101,10 @@ public class FrontServlet extends HttpServlet {
           Utilitaire util=new Utilitaire();
           Vector vObjs=new Vector();
           for(int i=0;i<MappingUrls.size();i++){ //tetezina le zavatra rehetra anatin'ilay MappingUrls azo avy amin'ilay package sy anotation teo ambony.
-            mapp=MappingUrls.get(String.valueOf(i+1));
+            mapp=(Mapping)MappingUrls.get(String.valueOf(i+1));
             //System.out.println("<h2>class : "+mapp.getClassName()+" | method : "+mapp.getMethodName()+" </h2>");
             cl=mapp.getTheclass();
-            namereturn=cl.getMethod(mapp.getMethodName()).getReturnType().getSimpleName(); //de alaina le anaran'le type de retour
+            namereturn=mapp.getThemethod().getReturnType().getSimpleName(); //de alaina le anaran'le type de retour
             if(namereturn.compareTo("ModelView")==0){ //ka jerena raha ModelView le type de retour
 
               mv=(ModelView)cl.getDeclaredMethod(mapp.getMethodName()).invoke(cl.newInstance()); //alaina le ModelView 
@@ -118,9 +118,13 @@ public class FrontServlet extends HttpServlet {
           }
           //------------------------------maka an'le valeur avy @ formulaire
           Class[] classes=access.getAllClassinAllpackageBypackageRacine(this.getServletContext().getRealPath("/WEB-INF"+path), pkgroot);
-          Object[] objects=util.createAllIfExisteRequest(classes, request);
+          Object[] objects=util.createInstanceAllclassesIfExisteRequest(classes, request);
           request.setAttribute("objects", objects);
-          //---------------------------------
+          //---------------------------------sprint 8
+          Vector<Object[]> vClMeth=util.getTheClassAndMethodByRequest(MappingUrls, request);
+          //System.out.println("-------------------"+vClMeth);
+          request.setAttribute("vClassMethod",vClMeth);
+          //--------------------------------
           request.getRequestDispatcher(dispach).forward(request, response);
         }catch(Exception ex){
             ex.printStackTrace();

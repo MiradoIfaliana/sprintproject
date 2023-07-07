@@ -1,4 +1,4 @@
-package test_framework;
+package test_framework.test_framework;
 import  framework.annotation.*;
 
 public class Client {

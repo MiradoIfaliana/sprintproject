@@ -16,6 +16,14 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.*;
 import javax.swing.SortingFocusTraversalPolicy;
 
+import javax.sound.midi.SysexMessage;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import java.io.*;
 
 import framework.AccessAllClassByPackage;
@@ -73,18 +81,74 @@ public class Utilitaire {
             return object;
       }
 
-      public Object getObjectWithFieldDefaultValue(Object object){
-            if(object==null){ return null;}
-            else{
-                  //change la valeur en valeur par defaut
-                  //object.getClass().getDeclaredFields()[0].
+      public Object getDefaultValue(Object obj){
+            // boolean : valeur par défaut est false.
+            // byte : valeur par défaut est 0.
+            // short : valeur par défaut est 0.
+            // int : valeur par défaut est 0.
+            // long : valeur par défaut est 0L.
+            // float : valeur par défaut est 0.0f.
+            // double : valeur par défaut est 0.0.
+            // char : valeur par défaut est '\u0000' (caractère nul).
+            Object o=null;
+            if(obj instanceof Boolean){ return false; }
+            if(obj instanceof Byte){ o=(byte)0; }
+            if(obj instanceof Short){ o=(short)0; }
+            if(obj instanceof Integer){ o=0; }
+            if(obj instanceof Long){ o=0L; }
+            if(obj instanceof Float){ o=0.0f; }
+            if(obj instanceof Double){ o=0.0; }
+            if(obj instanceof Character){ o='\u0000'; }
+            return o;
+      }
+
+      public void resetDefaultValueFieldOfObject(Object object)throws Exception{
+            if(object!=null){
+                  Field[] fields=object.getClass().getDeclaredFields();
+                  for(int i=0;i<fields.length;i++){
+                        if(fields[i].getName().compareTo("nbAppel")!=0){
+                              fields[i].setAccessible(true);
+                              fields[i].set( object , getDefaultValue(fields[i].get(object)) );  //set par la valeur par defaut
+                              fields[i].setAccessible(false);
+                        }
+                  }
             }
-            return null;
       }
 
 
-      public Object createtheInstanceClasseIfExisteRequest(Class classe,HttpServletRequest request)throws Exception, ServletException, IOException {
-            Object object=classe.newInstance();
+
+
+      public Object createtheInstanceClasseIfExisteRequest(Class classe,File xmlfile,HashMap<Class,Object> instances,HttpServletRequest request)throws Exception, ServletException, IOException {
+            //le class anaty servlet no ijerena azy, singleton sa tsia
+            Object object=null;
+            AccessAllClassByPackage access=new AccessAllClassByPackage();
+            Field fie=null;
+            if(classe!=null){
+                  if(access.isClassAnnotedAndWithValue(classe, Scope.class, "annote", "singleton")==true){ //si singleton
+                        if(instances.containsKey(classe)==true){ //si le cle (key) existe
+                              if(instances.get(classe)==null){ 
+                                    instances.replace(classe, classe.newInstance()); //ajouter l'instance si il y a encore
+                              }
+                        }else{ //si non on l'ajoute
+                              instances.put(classe, classe.newInstance());
+                        }
+                        object=instances.get(classe); //prends l'instance dans l'hashmap
+                        try{
+                              object.getClass().getDeclaredMethod("plusplusnbAppel").invoke(object); //nbAppel++
+                              fie=object.getClass().getDeclaredField("nbAppel");
+                              fie.setAccessible(true);
+                              System.out.println("nombre appel de "+object.getClass().getSimpleName()+"--------- >"+fie.get(object) );
+                              fie.setAccessible(false);
+                        }catch(Exception ex){
+                                    ex.printStackTrace();
+                        }
+
+                  }else{ //si ce n'est pas singleton
+                        object=classe.newInstance(); 
+                  }
+            }else{ return null; }
+            resetDefaultValueFieldOfObject(object); //fields to default value
+
             Field[] fields= classe.getDeclaredFields();
             String rqsVal="";
             Object param=null;
@@ -106,7 +170,7 @@ public class Utilitaire {
                                     DocumentBuilderFactory factory= DocumentBuilderFactory.newInstance();
                                     DocumentBuilder builder=factory.newDocumentBuilder();
                                     //File xmlFile = new File("D:\\ITUS4\\mrNaina\\sprint--0\\web.xml");
-                                    File xmlFile = new File(this.getServletContext().getRealPath("/WEB-INF/web.xml"));
+                                    File xmlFile = xmlfile;//new File(this.getServletContext().getRealPath("/WEB-INF/web.xml"));
                                     Document document = builder.parse(xmlFile);
                                     Element rootElement= document.getDocumentElement();
                                     String fileName = filePart.getSubmittedFileName();
@@ -118,7 +182,7 @@ public class Utilitaire {
                                     System.out.println(uploadPath);
                                     // Créez le flux de sortie pour écrire le fichier téléchargé
                                    filePart.write(uploadPath+"\\"+fileName);//sauvgarder le fichier
-                                   //---------------------------------------------------------------------------------
+                                   //------------------------------w---------------------------------------------------
                                     ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
                                     byte[] buffer = new byte[4096];
                                     int bytesRead;
@@ -153,18 +217,18 @@ public class Utilitaire {
             return object;
     }
 
-    public Object[] createInstanceAllclassesIfExisteRequest(Class[] classes,HttpServletRequest request)throws Exception, ServletException, IOException {
+    public Object[] createInstanceAllclassesIfExisteRequest(Class[] classes,File xmlfile ,HashMap<Class,Object> instances,HttpServletRequest request)throws Exception, ServletException, IOException {
       Vector vObjs=new Vector();
       Object obj=null;
       for(int i=0;i<classes.length;i++){ 
-            obj=createtheInstanceClasseIfExisteRequest(classes[i],request);
+            obj=createtheInstanceClasseIfExisteRequest(classes[i],xmlfile,instances,request);
             if(obj!=null){ vObjs.add(obj); } 
       }
       if(vObjs.size()<1){ return null;}
       Object[] objects=new Object[vObjs.size()];
       for(int i=0;i<vObjs.size();i++){   objects[i]=vObjs.elementAt(i); }
       return objects;
-    }
+      }
     public Vector<Object[]> getTheClassAndMethodByRequest(HashMap<String,Mapping> MappingUrls,HttpServletRequest request)throws Exception, ServletException, IOException {
       if(MappingUrls==null){return null;}
       else if(MappingUrls.size()<1){return null;}
@@ -181,14 +245,14 @@ public class Utilitaire {
             theClass=mapping.getTheclass();
             theMethod=mapping.getThemethod();
             parametre=theMethod.getParameters();
-            System.out.println("method------:"+theMethod+"|----class:"+theClass.getName());
+            //System.out.println("method------:"+theMethod+"|----class:"+theClass.getName());
             String[] parametersname=(String[])access.getValueAnnotation(theMethod,Url.class , "parameters");
             
             if(parametersname!=null){
-                  System.out.println("length------------------------:"+parametersname.length);
+                  //System.out.println("length------------------------:"+parametersname.length);
                   if(parametersname.length>0){
                         for(int j=0;j<parametersname.length;j++){
-                              System.out.println("name------------------------:"+parametersname[j]);
+                              //System.out.println("name------------------------:"+parametersname[j]);
                               if( request.getParameter(parametersname[j])!=null ){ //raha mi-existe le request mitovy @ le nom an'le parametre an'le fonction     
                                     nbrequestExist++;
                               }

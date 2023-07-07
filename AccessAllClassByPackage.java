@@ -3,11 +3,13 @@ package framework;
 import java.io.File;
 import java.sql.*;
 import java.util.Vector;
+
+import javax.swing.text.StyledEditorKit.BoldAction;
+
 import java.lang.annotation.*;
 import java.lang.reflect.*;
 //access.getClassAndtheMethodinPackagebyAnnotationvalue
 public class AccessAllClassByPackage {
-
    public Class[] getAllClassByPackage(String packageAbsolute,String packageracine) throws Exception {
       File folder = new File(packageAbsolute);
       if(folder.exists()==false){ throw new Exception("package : \""+packageAbsolute+"\" n'existe pas ou introuvable"); }
@@ -25,7 +27,7 @@ public class AccessAllClassByPackage {
             if ( files[i].isFile()==true && nfile.substring(nfile.length() - 6, nfile.length()).compareTo(".class") == 0) {
                // //System.out.print(nfile+" / ");
                nameClass = nfile.substring(0, nfile.length() - 6); //enlever le ".class"
-               //System.out.print(packageracine+"."+nameClass);
+               System.out.println(packg+ "." + nameClass);
                vclasses.add(Class.forName(packg+ "." + nameClass));
                //System.out.println(vclasses.elementAt(vclasses.size()-1));
                // //System.out.println(vclasses.elementAt( vclasses.size()-1 )+" \n");
@@ -125,6 +127,15 @@ public class AccessAllClassByPackage {
          // //System.out.println(classesAnnot[i]);
       }
       return classesAnnot;
+   }
+   public boolean isClassAnnotedAndWithValue(Class classe,Class annotationClass,String nameMethod,String value)throws Exception{
+      Annotation annotation=null;
+      annotation=classe.getAnnotation(annotationClass);
+      if(annotation==null){ return false; }
+      Object valeur=getValueAnnotation(classe,annotationClass, nameMethod);
+      String valeurS=(String)valeur;
+      if(value.compareToIgnoreCase(valeurS)==0){ return true; }
+      else{ return false; }
    }
 
    public Field[] getAllFieldsOfObjectByAnnotation(Object object, Class annotationclass) throws Exception {
@@ -229,6 +240,9 @@ public class AccessAllClassByPackage {
       }else if( object instanceof Method ){
          Method method = (Method) object;
          annotation = method.getAnnotation(annotationClass);
+      }else if( object instanceof Class ){
+         Class theClass=(Class)object;
+         annotation = theClass.getAnnotation(annotationClass);
       }
       // //System.out.println(annotation.annotationType());
       if(annotation==null){ return null; }

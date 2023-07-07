@@ -21,6 +21,7 @@ import org.w3c.dom.NodeList;
 
 import framework.ModelView;
 import framework.Utilitaire;
+import framework.annotation.Scope;
 public class FrontServlet extends HttpServlet {
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -32,12 +33,37 @@ public class FrontServlet extends HttpServlet {
      * @throws IOException if an I/O error occurs
      */
     HashMap<String,Mapping> MappingUrls;
-    HashMap<String,Object> instances;
+    HashMap<Class,Object> instances;
 
-    public void init(){
-      if(MappingUrls!=null){
-      System.out.println("TAILLLLLLLLLLLLLLE-----> "+MappingUrls.size());
+    @Override
+    public void init() throws ServletException {
+      String path="";
+      String pkgroot="";
+      try{
+          DocumentBuilderFactory factory= DocumentBuilderFactory.newInstance();
+          DocumentBuilder builder=factory.newDocumentBuilder();
+          File xmlFile = new File(this.getServletContext().getRealPath("/WEB-INF/web.xml"));
+          Document document = builder.parse(xmlFile);
+          Element rootElement= document.getDocumentElement();
+          //----------------------------------------------------------------------------------recuperation des class annoter scope
+          NodeList nodeList=rootElement.getElementsByTagName("path-after-WEB-INF");
+          Element element=(Element)nodeList.item(0); //de le 1er satria iray ihany ny path-after-WEB-INF
+          path=element.getTextContent();
+          nodeList=rootElement.getElementsByTagName("package-root-of-class");
+          element=(Element)nodeList.item(0); 
+          pkgroot=element.getTextContent();
+
+        AccessAllClassByPackage access=new AccessAllClassByPackage();
+        //System.out.println
+        Class[] classes=access.getAllClassByAnnotation(Scope.class,this.getServletContext().getRealPath("/WEB-INF"+path),pkgroot);
+        instances=new HashMap<Class,Object>();
+        for(int i=0;i<classes.length;i++){
+          instances.put(classes[i], null); // des class annoter scope dans HashMap instances
+        }
+      }catch(Exception ex){
+        ex.printStackTrace();
       }
+
     }
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         processRequest(request, response);
@@ -53,15 +79,12 @@ public class FrontServlet extends HttpServlet {
           //PrintWriter out=response.getWriter();
         try{
           String url = request.getRequestURL().toString();
-          //System.out.println("URL : "+url);
           String uri = request.getRequestURI();
-          //System.out.println("URI : "+uri);
           String[] uris=uri.split("/");
           String annotmethod=uris[uris.length-1];
           //System.out.println("annotation method : "+annotmethod);
           request.setAttribute("message",annotmethod);
           AccessAllClassByPackage access=new AccessAllClassByPackage(); 
-          //System.out.println(new Client().getClass().getPackage());
           //-------------------------------------------------------------webxml
           DocumentBuilderFactory factory= DocumentBuilderFactory.newInstance();
           DocumentBuilder builder=factory.newDocumentBuilder();
@@ -80,27 +103,27 @@ public class FrontServlet extends HttpServlet {
           String pkgroot=element.getTextContent();
           //System.out.println(pkgroot);
           //-----------------------------------------------------------------------------------------------------------------ajout a la Hashmap<String,>
-          Vector vcm=access.getClassAndtheMethodinPackagebyAnnotationvalue(this.getServletContext().getRealPath("/WEB-INF"+path),pkgroot,annotmethod, "url_map");
-          if(vcm==null){ vcm=new Vector(); }
-          Mapping[] map=new Mapping[vcm.size()];
-          Object[] objcm=null;
-          Class classe=null;
-          Method method=null;
           if(this.MappingUrls==null){
+            Vector vcm=access.getClassAndtheMethodinPackagebyAnnotationvalue(this.getServletContext().getRealPath("/WEB-INF"+path),pkgroot,annotmethod, "url_map");
+            if(vcm==null){ vcm=new Vector(); }
+            Mapping[] map=new Mapping[vcm.size()];
+            Object[] objcm=null;
+            Class classe=null;
+            Method method=null;
             this.MappingUrls=new HashMap<>();
-          }
-          for(int i=0;i<vcm.size();i++){
-            objcm=(Object[])vcm.elementAt(i); classe=(Class)objcm[0]; method=(Method)objcm[1];
+            for(int i=0;i<vcm.size();i++){
+              objcm=(Object[])vcm.elementAt(i); classe=(Class)objcm[0]; method=(Method)objcm[1];
 
-            //System.out.println(objcm[0].toString()+" | "+objcm[1].toString());
-            map[i]=new Mapping();
-            map[i].setClassName(classe.getSimpleName());
-            map[i].setMethodName(method.getName());
-            map[i].setTheclass(classe);
-            map[i].setThemethod(method);
-            MappingUrls.put(String.valueOf(i+1), map[i]);
+              //System.out.println(objcm[0].toString()+" | "+objcm[1].toString());
+              map[i]=new Mapping();
+              map[i].setClassName(classe.getSimpleName());
+              map[i].setMethodName(method.getName());
+              map[i].setTheclass(classe);
+              map[i].setThemethod(method);
+              MappingUrls.put(String.valueOf(i+1), map[i]);
+            }
+            request.setAttribute("hashmap",MappingUrls);
           }
-          request.setAttribute("hashmap",MappingUrls);
 
           String dispach="index.jsp";
           Mapping mapp=null;
@@ -127,44 +150,13 @@ public class FrontServlet extends HttpServlet {
           }
           //------------------------------maka an'le valeur avy @ formulaire
           Class[] classes=access.getAllClassinAllpackageBypackageRacine(this.getServletContext().getRealPath("/WEB-INF"+path), pkgroot);
-          Object[] objects=util.createInstanceAllclassesIfExisteRequest(classes, request);
+          Object[] objects=util.createInstanceAllclassesIfExisteRequest(classes ,new File(this.getServletContext().getRealPath("/WEB-INF/web.xml")),instances , request);
+          //createInstanceAllclassesIfExisteRequest(Class[] classes,HttpServletRequest request)
           request.setAttribute("objects", objects);
           //---------------------------------sprint 8
           Vector<Object[]> vClMeth=util.getTheClassAndMethodByRequest(MappingUrls, request);
           //System.out.println("-------------------"+vClMeth);
           request.setAttribute("vClassMethod",vClMeth);
-          //--------------------------------Sauvegarde fichier
-            // Obtenez le conteneur de la servlet
-            // ServletContext context = request.getServletContext();
-            // Part filePart = request.getPart("fileUpload");
-            // if(filePart!=null){
-            //   // Récupérez le nom du fichier
-            //   String fileName = filePart.getSubmittedFileName();
-            //   System.out.println(fileName);
-
-            //   // Définissez le chemin de destination pour enregistrer le fichier téléchargé
-            //   nodeList=rootElement.getElementsByTagName("upload-path");
-            //   element=(Element)nodeList.item(0); 
-            //   String uploadPath = element.getTextContent();
-            //   System.out.println(uploadPath);
-            //   // Créez le flux de sortie pour écrire le fichier téléchargé
-
-
-            //  filePart.write(uploadPath+"\\"+fileName);//sauvgarder le fichier
-
-            //   // Lisez les données du flux d'entrée et écrivez-les dans le flux de sortie
-            //   InputStream fileContent = filePart.getInputStream();
-            //   ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
-            //   byte[] buffer = new byte[4096];
-            //   int bytesRead;
-            //   while ((bytesRead = fileContent.read(buffer)) != -1) {
-            //     byteArrayOutputStream.write(buffer, 0, bytesRead);
-            //   }
-            //   byte[] filebytes=byteArrayOutputStream.toByteArray();
-            //   // Fermez les flux
-            //   byteArrayOutputStream.close();
-            //   fileContent.close();
-            // }
 
             //------------------------------------------------------
 

@@ -1,13 +1,26 @@
-package test_framework;
+package test_framework.test_framework;
 import framework.*;
 import java.util.*;
 import framework.annotation.*;
+@Scope(annote="singleton")
 public class Emp {
     int idemp;
     String nom;
     String nee;
     String genre;
     FileUpload fileUpload;
+    //---------------------
+    int nbAppel;
+
+    public int getNbAppel() {
+        return nbAppel;
+    }
+
+    public void setNbAppel(int nbAppel) {
+        this.nbAppel = nbAppel;
+    }
+    public void plusplusnbAppel(){ nbAppel=nbAppel+1; }
+    //-----------
 
     public Emp(){  }
     public Emp(int idemp, String nom, String nee, String genre) {

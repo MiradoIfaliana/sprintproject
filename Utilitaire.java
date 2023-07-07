@@ -7,11 +7,16 @@ import java.sql.Time;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Vector;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.servlet.*;
 import javax.servlet.ServletContext;
 import javax.servlet.http.*;
+import javax.swing.SortingFocusTraversalPolicy;
+
+import java.io.*;
 
 import framework.AccessAllClassByPackage;
 import framework.Mapping;
@@ -68,25 +73,84 @@ public class Utilitaire {
             return object;
       }
 
-    public Object createtheInstanceClasseIfExisteRequest(Class classe,HttpServletRequest request)throws Exception, ServletException, IOException {
-      Object object=classe.newInstance();
-      Field[] fields= classe.getDeclaredFields();
-      String rqsVal="";
-      Object param=null;
-      boolean exist=false;
-      if(request!=null){
-            for(int i=0;i<fields.length;i++){
-                  rqsVal=request.getParameter(fields[i].getName());
-                  if(rqsVal!=null && rqsVal!=""){
-                        //param=fields[i].getType().cast(rqsVal);
-                        param=valuOfString(fields[i].getType().getSimpleName(), rqsVal);
-                        object.getClass().getDeclaredMethod( to_setAttribu(fields[i].getName()) ,fields[i].getType() ).invoke(object,param);
-                        exist=true;
+      public Object getObjectWithFieldDefaultValue(Object object){
+            if(object==null){ return null;}
+            else{
+                  //change la valeur en valeur par defaut
+                  //object.getClass().getDeclaredFields()[0].
+            }
+            return null;
+      }
+
+
+      public Object createtheInstanceClasseIfExisteRequest(Class classe,HttpServletRequest request)throws Exception, ServletException, IOException {
+            Object object=classe.newInstance();
+            Field[] fields= classe.getDeclaredFields();
+            String rqsVal="";
+            Object param=null;
+            boolean exist=false;
+            Part filePart=null;
+            if(request!=null){
+                  for(int i=0;i<fields.length;i++){
+                        //raha FileUpload
+                        if(fields[i].getType().getSimpleName().compareTo("FileUpload")==0){
+                              //System.out.println(fields[i].getName());
+                              try{
+                                    filePart = request.getPart(fields[i].getName());
+                              }catch(Exception ex){
+                                    //ex.printStackTrace();
+                              }
+                              if(filePart!=null){
+                                    InputStream fileContent = filePart.getInputStream();
+                                    //----------------------------------------------------UPLOAD DU FILE
+                                    DocumentBuilderFactory factory= DocumentBuilderFactory.newInstance();
+                                    DocumentBuilder builder=factory.newDocumentBuilder();
+                                    //File xmlFile = new File("D:\\ITUS4\\mrNaina\\sprint--0\\web.xml");
+                                    File xmlFile = new File(this.getServletContext().getRealPath("/WEB-INF/web.xml"));
+                                    Document document = builder.parse(xmlFile);
+                                    Element rootElement= document.getDocumentElement();
+                                    String fileName = filePart.getSubmittedFileName();
+                                    //System.out.println(fileName);
+                                    // Définissez le chemin de destination pour enregistrer le fichier téléchargé
+                                    NodeList nodeList=rootElement.getElementsByTagName("upload-path");
+                                    Element element=(Element)nodeList.item(0); 
+                                    String uploadPath = element.getTextContent();
+                                    System.out.println(uploadPath);
+                                    // Créez le flux de sortie pour écrire le fichier téléchargé
+                                   filePart.write(uploadPath+"\\"+fileName);//sauvgarder le fichier
+                                   //---------------------------------------------------------------------------------
+                                    ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
+                                    byte[] buffer = new byte[4096];
+                                    int bytesRead;
+                                    while ((bytesRead = fileContent.read(buffer)) != -1) {
+                                    byteArrayOutputStream.write(buffer, 0, bytesRead);
+                                    }
+                                    byte[] filebytes=byteArrayOutputStream.toByteArray();
+                                    //-----creer le fileUpload
+                                    FileUpload fileUpload=new FileUpload();
+                                    fileUpload.setFilename(filePart.getSubmittedFileName());
+                                    fileUpload.setBytes(filebytes);     
+                                    param=fileUpload;     
+                                    //set
+                                    object.getClass().getDeclaredMethod( to_setAttribu(fields[i].getName()) ,fields[i].getType() ).invoke(object,param);
+                                    // Fermez les flux
+                                    byteArrayOutputStream.close();
+                                    fileContent.close();
+                                    exist=true;
+                              }
+                        }else{
+                              rqsVal=request.getParameter(fields[i].getName());
+                              if(rqsVal!=null && rqsVal!=""){
+                                    //param=fields[i].getType().cast(rqsVal);
+                                    param=valuOfString(fields[i].getType().getSimpleName(), rqsVal);
+                                    object.getClass().getDeclaredMethod( to_setAttribu(fields[i].getName()) ,fields[i].getType() ).invoke(object,param);
+                                    exist=true;
+                              }
+                        }
                   }
             }
-      }
-      if(exist==false){ return null; }
-      return object;
+            if(exist==false){ return null; }
+            return object;
     }
 
     public Object[] createInstanceAllclassesIfExisteRequest(Class[] classes,HttpServletRequest request)throws Exception, ServletException, IOException {
@@ -138,23 +202,6 @@ public class Utilitaire {
                         nbrequestExist=0;
                   }
             }
-            //-----------------------------------raha mba mety le parameters[i].getname() nefa arg0,arg1....
-            // if(parametre!=null){
-            //       System.out.println("-------------param------"+parametre.length);
-            //       for(int j=0;j<parametre.length;j++){
-            //             System.out.println("-----nom param----"+parametre[j].getName()); 
-            //             if( request.getParameter(parametre[j].getName())!=null ){ //raha mi-existe le request mitovy @ le nom an'le parametre an'le fonction     
-            //             nbrequestExist++;
-            //             }
-            //       }
-            //       if(nbrequestExist==parametre.length){ //ka raha ni-existe daholo le izy
-            //             objClaMeth=new Object[2];
-            //             objClaMeth[0]=theClass;
-            //             objClaMeth[1]=theMethod;
-            //             vClassMethod.add(objClaMeth);
-            //       }
-            //       nbrequestExist=0;
-            // }
       }
       if(vClassMethod.size()<1){return null;}
       return vClassMethod;

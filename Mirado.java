@@ -39,19 +39,13 @@ public class Mirado {
     public void setGenre(String genre) {
         this.genre = genre;
     }
-
-
-
     @Url(url_map="save")
-    public void insert(){
-        
+    public void insert(){   
     }
-    
     @Url(url_map="findall")
     public void searchMirado(){
     }
-    public void update(){
-        
+    public void update(){   
     }
     @Url(url_map="findall")
     public ModelView whereMirado(){
